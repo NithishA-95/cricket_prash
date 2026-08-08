@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api/players';
+const API_URL = import.meta.env.PROD ? '/api/players' : 'http://localhost:5000/api/players';
 
 export const getPlayers = async () => {
   try {
