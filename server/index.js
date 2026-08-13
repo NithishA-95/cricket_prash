@@ -84,14 +84,21 @@ app.delete('/api/players/:id', async (req, res) => {
 
 const path = require('path');
 
-// Serve static frontend in production
-app.use(express.static(path.join(__dirname, '../dist')));
+// When hosting on Vercel, it handles static files and runs this file as a serverless function.
+// So we only serve static files and listen on a port if we are NOT on Vercel.
+if (!process.env.VERCEL) {
+  // Serve static frontend in production
+  app.use(express.static(path.join(__dirname, '../dist')));
 
-// Catch-all route to serve the React index.html
-app.get(/^(.*)$/, (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
-});
+  // Catch-all route to serve the React index.html
+  app.get(/^(.*)$/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// Export the app for Vercel
+module.exports = app;
