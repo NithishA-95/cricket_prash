@@ -46,6 +46,7 @@ const Register = () => {
       navigate('/admin');
     } catch (error) {
       console.error('Failed to register:', error);
+      alert('Registration failed: ' + error.message);
       setIsSubmitting(false);
     }
   };

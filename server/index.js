@@ -12,14 +12,19 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' })); // Increase limit for Base64 image uploads
 
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('Connected to MongoDB Atlas'))
-.catch((err) => console.error('MongoDB connection error:', err));
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB Atlas'))
+    .catch((err) => console.error('MongoDB connection error:', err));
+} else {
+  console.error('CRITICAL: MONGODB_URI is not set in environment variables!');
+}
 
 // Routes
 
 // Get all players
 app.get('/api/players', async (req, res) => {
+  if (!process.env.MONGODB_URI) return res.status(500).json({ message: "MONGODB_URI environment variable is missing on Vercel!" });
   try {
     const players = await Player.find().sort({ registeredAt: -1 });
     // Transform _id to id for frontend compatibility
@@ -38,6 +43,7 @@ app.get('/api/players', async (req, res) => {
 
 // Create a new player
 app.post('/api/players', async (req, res) => {
+  if (!process.env.MONGODB_URI) return res.status(500).json({ message: "MONGODB_URI environment variable is missing on Vercel!" });
   try {
     const newPlayer = new Player(req.body);
     const savedPlayer = await newPlayer.save();

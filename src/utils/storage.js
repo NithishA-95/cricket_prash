@@ -18,7 +18,10 @@ export const addPlayer = async (player) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(player)
     });
-    if (!response.ok) throw new Error('Failed to add player');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to add player');
+    }
     return await response.json();
   } catch (error) {
     console.error('Error adding player:', error);
