@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPlayers, deletePlayer, updatePlayer } from '../utils/storage';
-import { User, Phone, Activity, Shirt, LogOut, Trash2, Edit2, X } from 'lucide-react';
+import { User, Phone, Activity, Shirt, LogOut, Trash2, Edit2, X, Download } from 'lucide-react';
 
 const Admin = () => {
   const [players, setPlayers] = useState([]);
@@ -25,6 +25,45 @@ const Admin = () => {
   const handleLogout = () => {
     localStorage.removeItem('isAdminLoggedIn');
     navigate('/login');
+  };
+
+  const handleExport = () => {
+    // Create CSV content
+    if (players.length > 0) {
+      const headers = ['fullName', 'mobileNumber', 'playingRole', 'battingStyle', 'bowlingStyle', 'jerseyNumber', 'jerseySize', 'registeredAt'];
+      const csvRows = [headers.join(',')];
+      
+      for (const player of players) {
+        const values = headers.map(header => {
+          let val = player[header] || '';
+          if (typeof val === 'string') {
+             val = val.replace(/"/g, '""');
+             return `"${val}"`;
+          }
+          return val;
+        });
+        csvRows.push(values.join(','));
+      }
+      
+      // Download CSV
+      const csvStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvRows.join('\n'));
+      const csvAnchorNode = document.createElement('a');
+      csvAnchorNode.setAttribute("href", csvStr);
+      csvAnchorNode.setAttribute("download", "players.csv");
+      document.body.appendChild(csvAnchorNode);
+      csvAnchorNode.click();
+      csvAnchorNode.remove();
+    }
+
+    // Download JSON (excluding photoBase64 to save size)
+    const playersWithoutPhotos = players.map(({ photoBase64, ...rest }) => rest);
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(playersWithoutPhotos, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "players.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
   };
 
   const handleDelete = async (id) => {
@@ -54,6 +93,9 @@ const Admin = () => {
           <div style={{ background: 'rgba(255,255,255,0.1)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
             Total Registered: <strong style={{ color: 'var(--primary-color)' }}>{players.length}</strong>
           </div>
+          <button onClick={handleExport} className="btn btn-primary" style={{ padding: '0.5rem 1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <Download size={16} /> Export
+          </button>
           <button onClick={handleLogout} className="btn btn-secondary" style={{ padding: '0.5rem 1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <LogOut size={16} /> Logout
           </button>
